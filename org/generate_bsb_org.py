@@ -14,6 +14,8 @@ FOOTNOTE_RE = re.compile(r'\\f.*?\\f\*', re.DOTALL)
 CROSS_REF_RE = re.compile(r'\\x.*?\\x\*', re.DOTALL)
 INLINE_MARKER_RE = re.compile(r'\\(add|bd|bk|em|it|k|nd|pn|qac|sc|sig|tl|wj)\*?')
 
+PARAGRAPH_RE = re.compile(r'\\(p|nb|b)(\s+|$)')
+
 TITLE_RE = re.compile(r'\\(h|toc1|toc2|mt1)\s+(.*)')
 SECTION_RE = re.compile(r'\\s(\d*)\s+(.*)')
 VERSE_RE = re.compile(r'\\v\s+(\d+)\s+(.*)')
@@ -94,6 +96,11 @@ def parse_usfm(path: Path) -> dict:
                 current_items.append(("section", 1, title))
             continue
 
+        if (m := PARAGRAPH_RE.match(line)):
+            flush_verse()
+            current_items.append(("paragraph_break",))
+            continue
+
         if (m := SECTION_REF_RE.match(line)):
             ref = clean_text(m.group(1))
             if ref and current_items and current_items[-1][0] == "section":
@@ -113,9 +120,6 @@ def parse_usfm(path: Path) -> dict:
             current_verse = [m.group(1), clean_text(m.group(2))]
             continue
 
-        if line.startswith('\\b'):
-            continue
-
         if (m := ACROSTIC_RE.match(line)):
             frag = clean_text(m.group(1))
             current_verse = append_fragment(frag, True, current_items, current_verse)
@@ -124,6 +128,12 @@ def parse_usfm(path: Path) -> dict:
         if (m := CONTINUATION_RE.match(line)):
             marker, frag = m.groups()
             frag = clean_text(frag)
+            
+            if not frag and marker in ('m', 'pmo', 'pc'):
+                flush_verse()
+                current_items.append(("paragraph_break",))
+                continue
+
             prefer_newline = marker.startswith('q') or marker.startswith('li') or marker in ('qr', 'pc')
             current_verse = append_fragment(frag, prefer_newline, current_items, current_verse)
             continue
@@ -145,17 +155,30 @@ def render_org(books, output_path: Path) -> None:
         lines.append(f"* {book['title']}")
         for chapter in book["chapters"]:
             lines.append(f"** Chapter {chapter['number']}")
+            
+            verse_buffer = []
+            def flush_buffer():
+                if verse_buffer:
+                    lines.append(" ".join(verse_buffer))
+                    verse_buffer.clear()
+
             for item in chapter["items"]:
                 kind = item[0]
-                if kind == "section":
-                    _, level, title = item
-                    stars = "*" * (2 + level)
-                    lines.append(f"{stars} {title}")
-                elif kind == "paragraph":
-                    lines.append(item[1])
-                elif kind == "verse":
+                if kind == "verse":
                     _, num, text = item
-                    lines.append(f"{num} {text}")
+                    verse_buffer.append(f"{num} {text}")
+                else:
+                    flush_buffer()
+                    if kind == "section":
+                        _, level, title = item
+                        stars = "*" * (2 + level)
+                        lines.append(f"{stars} {title}")
+                    elif kind == "paragraph":
+                        lines.append(item[1])
+                    elif kind == "paragraph_break":
+                        lines.append("")
+            
+            flush_buffer()
             lines.append("")
         lines.append("")
 
