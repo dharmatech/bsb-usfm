@@ -151,15 +151,23 @@ def render_org(books, output_path: Path) -> None:
         "",
     ]
 
+    def add_line(text=""):
+        if not text:
+            # Only add a blank line if the previous one isn't already blank
+            if lines and lines[-1] != "":
+                lines.append("")
+        else:
+            lines.append(text)
+
     for book in books:
-        lines.append(f"* {book['title']}")
+        add_line(f"* {book['title']}")
         for chapter in book["chapters"]:
-            lines.append(f"** Chapter {chapter['number']}")
+            add_line(f"** Chapter {chapter['number']}")
             
             verse_buffer = []
             def flush_buffer():
                 if verse_buffer:
-                    lines.append(" ".join(verse_buffer))
+                    add_line(" ".join(verse_buffer))
                     verse_buffer.clear()
 
             for item in chapter["items"]:
@@ -172,15 +180,18 @@ def render_org(books, output_path: Path) -> None:
                     if kind == "section":
                         _, level, title = item
                         stars = "*" * (2 + level)
-                        lines.append(f"{stars} {title}")
+                        # Ensure blank line before section
+                        if lines and lines[-1] != "":
+                            add_line("")
+                        add_line(f"{stars} {title}")
                     elif kind == "paragraph":
-                        lines.append(item[1])
+                        add_line(item[1])
                     elif kind == "paragraph_break":
-                        lines.append("")
+                        add_line("")
             
             flush_buffer()
-            lines.append("")
-        lines.append("")
+            add_line("")
+        add_line("")
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     content = "\n".join(lines).rstrip() + "\n"
