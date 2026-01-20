@@ -1,11 +1,21 @@
 
-[Berean Standard Bible](https://berean.bible/index.html)
+# [Berean Standard Bible](https://berean.bible/index.html)
 
 The Berean Standard Bible is in the [public domain](https://berean.bible/licensing.htm).
 
-BSB in Emacs Org Mode
+# BSB in Emacs Org Mode
 
-BSB as single HTML page with foldable titles, chapters and sections.
+See [org](org) directory.
+
+The following was used to generate `bsb.org`:
+
+```
+python .\generate_bsb_org.py
+```
+
+# BSB as single HTML page with foldable titles, chapters and sections.
+
+See [html](html) directory.
 
 Book titles, chapter numbers and sections are all headings.
 
