@@ -1,5 +1,7 @@
 
-Berean Standard Bible
+[Berean Standard Bible](https://berean.bible/index.html)
+
+The Berean Standard Bible is in the [public domain](https://berean.bible/licensing.htm).
 
 BSB in Emacs Org Mode
 
