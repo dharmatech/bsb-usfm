@@ -34036,17 +34036,67 @@ summary:hover {
   </details>
 </main>
 <script>
+  const BOOK_STATE = {
+    COLLAPSED: "collapsed",
+    BOOK_ONLY: "book_only",
+    BOOK_AND_CHAPTERS: "book_and_chapters",
+  };
+
+  function setBookState(book, state) {
+    const chapters = book.querySelectorAll(":scope > details.chapter");
+    if (state === BOOK_STATE.COLLAPSED) {
+      book.open = false;
+      chapters.forEach((chapter) => {
+        chapter.open = false;
+      });
+      book.dataset.state = BOOK_STATE.COLLAPSED;
+      return;
+    }
+
+    if (state === BOOK_STATE.BOOK_ONLY) {
+      book.open = true;
+      chapters.forEach((chapter) => {
+        chapter.open = false;
+      });
+      book.dataset.state = BOOK_STATE.BOOK_ONLY;
+      return;
+    }
+
+    book.open = true;
+    chapters.forEach((chapter) => {
+      chapter.open = true;
+    });
+    book.dataset.state = BOOK_STATE.BOOK_AND_CHAPTERS;
+  }
+
   document.querySelectorAll("details.book").forEach((book) => {
-    book.addEventListener("toggle", () => {
-      const chapters = book.querySelectorAll(":scope > details.chapter");
-      if (book.open) {
-        chapters.forEach((chapter) => {
-          chapter.open = true;
-        });
+    setBookState(book, BOOK_STATE.COLLAPSED);
+    const summary = book.querySelector(":scope > summary");
+
+    if (!summary) {
+      return;
+    }
+
+    const advanceState = () => {
+      const state = book.dataset.state || BOOK_STATE.COLLAPSED;
+      if (state === BOOK_STATE.COLLAPSED) {
+        setBookState(book, BOOK_STATE.BOOK_AND_CHAPTERS);
+      } else if (state === BOOK_STATE.BOOK_AND_CHAPTERS) {
+        setBookState(book, BOOK_STATE.BOOK_ONLY);
       } else {
-        chapters.forEach((chapter) => {
-          chapter.open = false;
-        });
+        setBookState(book, BOOK_STATE.COLLAPSED);
+      }
+    };
+
+    summary.addEventListener("click", (event) => {
+      event.preventDefault();
+      advanceState();
+    });
+
+    summary.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        advanceState();
       }
     });
   });
