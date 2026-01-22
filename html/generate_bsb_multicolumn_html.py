@@ -143,6 +143,7 @@ body::before {{
 }}
 
 .book-title {{
+  display: block;
   margin: 1.4rem 0 0.5rem;
   font-family: \"Fraunces\", \"Georgia\", serif;
   font-size: 1.6rem;
@@ -152,6 +153,7 @@ body::before {{
 }}
 
 .chapter-title {{
+  display: block;
   margin: 1.1rem 0 0.4rem;
   font-size: 0.95rem;
   letter-spacing: 0.15em;
@@ -161,6 +163,7 @@ body::before {{
 }}
 
 .section-title {{
+  display: block;
   margin: 0.9rem 0 0.25rem;
   font-size: 1rem;
   color: #f8d477;
@@ -195,6 +198,38 @@ p {{
 .instruction {{
   font-style: italic;
   color: var(--muted);
+}}
+
+details {{
+  break-inside: auto;
+}}
+
+summary {{
+  list-style: none;
+  cursor: pointer;
+  outline: none;
+  break-inside: avoid;
+}}
+
+summary::-webkit-details-marker {{
+  display: none;
+}}
+
+summary::before {{
+  content: \">\";
+  display: inline-block;
+  margin-right: 0.6rem;
+  color: var(--muted);
+  transition: transform 0.2s ease, color 0.2s ease;
+}}
+
+details[open] > summary::before {{
+  transform: rotate(90deg);
+  color: var(--accent);
+}}
+
+summary:hover {{
+  color: var(--accent);
 }}
 
 @keyframes rise {{
@@ -272,33 +307,46 @@ p {{
     for book in books:
         safe_id = book["id"]
         book_title = html_lib.escape(book["title"])
-        html_parts.append(f'  <section class="book" id="{safe_id}">\n')
-        html_parts.append(f'    <h1 class="book-title">{book_title}</h1>\n')
+        html_parts.append(f'  <details class="book" id="{safe_id}">\n')
+        html_parts.append(f'    <summary class="book-title">{book_title}</summary>\n')
 
         for chapter in book["chapters"]:
             chap_num = chapter["number"]
-            html_parts.append(f'    <h2 class="chapter-title">Chapter {chap_num}</h2>\n')
+            html_parts.append('    <details class="chapter">\n')
+            html_parts.append(f'      <summary class="chapter-title">Chapter {chap_num}</summary>\n')
 
             paragraph_buffer = []
+            current_section_open = False
+
+            def paragraph_indent() -> str:
+                return "        " if current_section_open else "      "
 
             def flush_paragraph():
                 if paragraph_buffer:
                     content = "".join(paragraph_buffer)
-                    html_parts.append(f'    <p>{content}</p>\n')
+                    html_parts.append(f'{paragraph_indent()}<p>{content}</p>\n')
                     paragraph_buffer.clear()
+
+            def close_current_section():
+                nonlocal current_section_open
+                if current_section_open:
+                    flush_paragraph()
+                    html_parts.append("      </details>\n")
+                    current_section_open = False
 
             for item in chapter["items"]:
                 kind = item[0]
 
                 if kind == "section":
-                    flush_paragraph()
-                    _, level, title, ref_text = item
+                    close_current_section()
+                    _, _level, title, ref_text = item
                     safe_title = html_lib.escape(title)
-                    h_tag = f"h{min(6, level + 2)}"
-                    html_parts.append(f'    <{h_tag} class="section-title">{safe_title}</{h_tag}>\n')
+                    html_parts.append('      <details class="section">\n')
+                    html_parts.append(f'        <summary class="section-title">{safe_title}</summary>\n')
                     if ref_text:
                         safe_ref = html_lib.escape(ref_text)
-                        html_parts.append(f'    <div class="section-ref">({safe_ref})</div>\n')
+                        html_parts.append(f'        <div class="section-ref">({safe_ref})</div>\n')
+                    current_section_open = True
                 elif kind == "verse":
                     _, num, text = item
                     text = html_lib.escape(text).replace("\n", "<br>")
@@ -310,11 +358,14 @@ p {{
                 elif kind == "paragraph":
                     flush_paragraph()
                     text = html_lib.escape(item[1])
-                    html_parts.append(f'    <p class="instruction">{text}</p>\n')
+                    html_parts.append(f'{paragraph_indent()}<p class="instruction">{text}</p>\n')
 
+            close_current_section()
             flush_paragraph()
 
-        html_parts.append("  </section>\n")
+            html_parts.append("    </details>\n")
+
+        html_parts.append("  </details>\n")
 
     html_parts.append(
         """</main>
