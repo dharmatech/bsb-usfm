@@ -464,6 +464,28 @@ summary:hover {{
       },
       { passive: false }
     );
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "PageDown" && event.key !== "PageUp") {
+        return;
+      }
+
+      const target = event.target;
+      if (
+        target instanceof HTMLElement &&
+        (target.isContentEditable ||
+          target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT")
+      ) {
+        return;
+      }
+
+      event.preventDefault();
+      const pageSize = reader.clientWidth;
+      const delta = event.key === "PageDown" ? pageSize : -pageSize;
+      reader.scrollLeft += delta;
+    });
   }
 </script>
 </body>
