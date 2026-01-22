@@ -466,7 +466,12 @@ summary:hover {{
     );
 
     document.addEventListener("keydown", (event) => {
-      if (event.key !== "PageDown" && event.key !== "PageUp") {
+      if (
+        event.key !== "PageDown" &&
+        event.key !== "PageUp" &&
+        event.key !== "Home" &&
+        event.key !== "End"
+      ) {
         return;
       }
 
@@ -482,6 +487,16 @@ summary:hover {{
       }
 
       event.preventDefault();
+      if (event.key === "Home") {
+        reader.scrollLeft = 0;
+        return;
+      }
+
+      if (event.key === "End") {
+        reader.scrollLeft = reader.scrollWidth - reader.clientWidth;
+        return;
+      }
+
       const pageSize = reader.clientWidth;
       const delta = event.key === "PageDown" ? pageSize : -pageSize;
       reader.scrollLeft += delta;
