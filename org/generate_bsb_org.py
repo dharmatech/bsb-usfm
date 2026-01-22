@@ -86,14 +86,14 @@ def parse_usfm(path: Path) -> dict:
             level = int(m.group(1) or 1)
             title = clean_text(m.group(2))
             if title:
-                current_items.append(("section", level, title))
+                current_items.append(("section", level, title, None))
             continue
 
         if (m := MAJOR_SECTION_RE.match(line)):
             flush_verse()
             title = clean_text(m.group(1))
             if title:
-                current_items.append(("section", 1, title))
+                current_items.append(("section", 1, title, None))
             continue
 
         if (m := PARAGRAPH_RE.match(line)):
@@ -104,9 +104,11 @@ def parse_usfm(path: Path) -> dict:
         if (m := SECTION_REF_RE.match(line)):
             ref = clean_text(m.group(1))
             if ref and current_items and current_items[-1][0] == "section":
-                kind, lvl, title = current_items[-1]
+                kind, lvl, title, existing_ref = current_items[-1]
                 ref_text = ref[1:-1].strip() if ref.startswith("(") and ref.endswith(")") else ref
-                current_items[-1] = (kind, lvl, f"{title} ({ref_text})")
+                if existing_ref:
+                    ref_text = f"{existing_ref}; {ref_text}"
+                current_items[-1] = (kind, lvl, title, ref_text)
             continue
 
         if (m := DESCRIPTION_RE.match(line)):
@@ -178,12 +180,14 @@ def render_org(books, output_path: Path) -> None:
                 else:
                     flush_buffer()
                     if kind == "section":
-                        _, level, title = item
+                        _, level, title, ref_text = item
                         stars = "*" * (2 + level)
                         # Ensure blank line before section
                         if lines and lines[-1] != "":
                             add_line("")
                         add_line(f"{stars} {title}")
+                        if ref_text:
+                            add_line(f"({ref_text})")
                     elif kind == "paragraph":
                         add_line(item[1])
                     elif kind == "paragraph_break":
