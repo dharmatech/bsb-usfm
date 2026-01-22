@@ -22,6 +22,7 @@
   --column-width: calc((100vw - 12.5rem) / 4);
   --section-spacing: 0.9rem;
   --section-ref-gap: 0.75rem;
+  --chapter-spacing: 1.1rem;
 }
 
 * {
@@ -169,7 +170,7 @@ body::before {
 
 .chapter-title {
   display: block;
-  margin: 1.1rem 0 0.4rem;
+  margin: var(--chapter-spacing) 0 0.4rem;
   font-size: 0.95rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -330,6 +331,11 @@ summary:hover {
       <label for="sectionSpacing">Section spacing</label>
       <input id="sectionSpacing" type="range" min="0" max="2" step="0.05" value="0.9">
       <output id="sectionSpacingValue" for="sectionSpacing">0.90rem</output>
+    </div>
+    <div class="topbar-control">
+      <label for="chapterSpacing">Chapter spacing</label>
+      <input id="chapterSpacing" type="range" min="0" max="2.5" step="0.05" value="1.1">
+      <output id="chapterSpacingValue" for="chapterSpacing">1.10rem</output>
     </div>
   </div>
 </header>
@@ -34232,6 +34238,26 @@ summary:hover {
       applySpacing(spacingInput.value);
       spacingInput.addEventListener("input", (event) => {
         applySpacing(event.target.value);
+      });
+    }
+
+    const chapterSpacingInput = document.getElementById("chapterSpacing");
+    const chapterSpacingValue = document.getElementById("chapterSpacingValue");
+    if (chapterSpacingInput && chapterSpacingValue) {
+      const applyChapterSpacing = (value) => {
+        const numeric = Number.parseFloat(value);
+        if (Number.isNaN(numeric)) {
+          return;
+        }
+
+        const clamped = Math.min(2.5, Math.max(0, numeric));
+        document.documentElement.style.setProperty("--chapter-spacing", `${clamped}rem`);
+        chapterSpacingValue.textContent = `${clamped.toFixed(2)}rem`;
+      };
+
+      applyChapterSpacing(chapterSpacingInput.value);
+      chapterSpacingInput.addEventListener("input", (event) => {
+        applyChapterSpacing(event.target.value);
       });
     }
   }
