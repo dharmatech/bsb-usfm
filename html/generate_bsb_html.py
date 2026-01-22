@@ -93,14 +93,14 @@ def parse_usfm(path: Path) -> dict:
             level = int(m.group(1) or 1)
             title = clean_text(m.group(2))
             if title:
-                current_items.append(("section", level, title))
+                current_items.append(("section", level, title, None))
             continue
 
         if m := MAJOR_SECTION_RE.match(line):
             flush_verse()
             title = clean_text(m.group(1))
             if title:
-                current_items.append(("section", 1, title))
+                current_items.append(("section", 1, title, None))
             continue
 
         if PARAGRAPH_RE.match(line):
@@ -111,9 +111,11 @@ def parse_usfm(path: Path) -> dict:
         if m := SECTION_REF_RE.match(line):
             ref = clean_text(m.group(1))
             if ref and current_items and current_items[-1][0] == "section":
-                kind, lvl, title = current_items[-1]
+                kind, lvl, title, existing_ref = current_items[-1]
                 ref_text = ref[1:-1].strip() if ref.startswith("(") and ref.endswith(")") else ref
-                current_items[-1] = (kind, lvl, f"{title} ({ref_text})")
+                if existing_ref:
+                    ref_text = f"{existing_ref}; {ref_text}"
+                current_items[-1] = (kind, lvl, title, ref_text)
             continue
 
         if m := DESCRIPTION_RE.match(line):
@@ -172,6 +174,7 @@ h1, h2, h3, h4, h5, h6 { font-family: -apple-system, BlinkMacSystemFont, "Segoe 
 .verse-num { font-size: 0.75em; vertical-align: text-top; color: #999; margin-right: 0.25em; font-weight: bold; user-select: none; }
 .section-title { color: #0d6efd; margin-top: 1.5em; font-size: 1.25rem; cursor: pointer; }
 .section-title:hover { text-decoration: underline; }
+.section-ref { color: #6c757d; font-size: 0.95rem; margin-top: -0.25rem; margin-bottom: 0.75rem; }
 .instruction { font-style: italic; color: #666; margin-bottom: 1rem; }
 .sidebar { position: fixed; top: 0; bottom: 0; left: 0; z-index: 100; padding: 48px 0 0; box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1); background-color: #f8f9fa; }
 .sidebar-sticky { position: relative; top: 0; height: calc(100vh - 48px); padding-top: .5rem; overflow-x: hidden; overflow-y: auto; }
@@ -276,7 +279,7 @@ h1, h2, h3, h4, h5, h6 { font-family: -apple-system, BlinkMacSystemFont, "Segoe 
                 if kind == "section":
                     close_current_section()
                     section_counter += 1
-                    _, level, title = item
+                    _, level, title, ref_text = item
                     safe_title = html.escape(title)
                     h_tag = f"h{min(6, level + 2)}"
                     sec_id = f"collapse-sec-{safe_id}-{chap_num}-{section_counter}"
@@ -284,6 +287,9 @@ h1, h2, h3, h4, h5, h6 { font-family: -apple-system, BlinkMacSystemFont, "Segoe 
                         f'              <{h_tag} class="section-title collapsed" data-bs-toggle="collapse" data-bs-target="#{sec_id}" aria-expanded="false">\n'
                     )
                     html_parts.append(f'                <span class="collapse-icon">{safe_title}</span></{h_tag}>\n')
+                    if ref_text:
+                        safe_ref = html.escape(ref_text)
+                        html_parts.append(f'              <div class="section-ref">({safe_ref})</div>\n')
                     html_parts.append(f'              <div id="{sec_id}" class="collapse">\n')
                     current_section_id = sec_id
                 elif kind == "verse":
