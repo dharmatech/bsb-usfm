@@ -37,6 +37,8 @@ def render_multicolumn_html(books, output_path: Path, column_count: int) -> None
   --header-height: 72px;
   --column-count: {column_count};
   --column-gap: 2.5rem;
+  --reader-padding-x: 2.5rem;
+  --column-width: calc((100vw - 12.5rem) / 4);
 }}
 
 * {{
@@ -129,9 +131,10 @@ body::before {{
 .reader {{
   height: calc(100vh - var(--header-height));
   margin-top: var(--header-height);
-  padding: 1.6rem 2.5rem 3rem;
-  overflow-y: auto;
-  column-count: var(--column-count);
+  padding: 1.6rem var(--reader-padding-x) 3rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  column-width: var(--column-width);
   column-gap: var(--column-gap);
   column-rule: 1px solid var(--rule);
   column-fill: auto;
@@ -255,18 +258,21 @@ summary:hover {{
 @media (max-width: 1500px) {{
   :root {{
     --column-count: 3;
+    --column-width: calc((100vw - 10rem) / 3);
   }}
 }}
 
 @media (max-width: 1200px) {{
   :root {{
     --column-count: 2;
+    --column-width: calc((100vw - 7.5rem) / 2);
   }}
 }}
 
 @media (max-width: 900px) {{
   :root {{
     --column-count: 1;
+    --column-width: calc(100vw - 2.8rem);
   }}
 
   .topbar {{
@@ -281,6 +287,7 @@ summary:hover {{
     margin-top: 0;
     height: calc(100vh - 110px);
     padding: 1.2rem 1.4rem 2rem;
+    overflow-y: auto;
   }}
 
   .topbar-right {{
@@ -434,6 +441,30 @@ summary:hover {{
       }
     });
   });
+
+  const reader = document.getElementById("reader");
+  if (reader) {
+    reader.addEventListener(
+      "wheel",
+      (event) => {
+        if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) {
+          return;
+        }
+
+        event.preventDefault();
+        const lineSize = 24;
+        const pageSize = reader.clientWidth;
+        const delta =
+          event.deltaMode === 1
+            ? event.deltaY * lineSize
+            : event.deltaMode === 2
+              ? event.deltaY * pageSize
+              : event.deltaY;
+        reader.scrollLeft += delta;
+      },
+      { passive: false }
+    );
+  }
 </script>
 </body>
 </html>
