@@ -388,7 +388,7 @@ summary:hover {{
   }}
 
   .topbar-right {{
-    flex-wrap: wrap;
+    display: none;
   }}
 
   .topbar-control {{
