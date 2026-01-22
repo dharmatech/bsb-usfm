@@ -47,6 +47,7 @@ def render_multicolumn_html(books, output_path: Path, column_count: int) -> None
   --chapter-bottom-gap: 0.4rem;
   --heading-line-height: 1.25;
   --caret-gap: 0.6rem;
+  --mobile-header-offset: 110px;
 }}
 
 * {{
@@ -381,7 +382,8 @@ summary:hover {{
   .reader {{
     margin-top: 0;
     height: calc(100vh - 110px);
-    padding: 1.2rem 1.4rem 2rem;
+    padding: calc(1.2rem + var(--mobile-header-offset)) 1.4rem 2rem;
+    height: calc(100vh - var(--mobile-header-offset));
     overflow-y: auto;
   }}
 
@@ -621,6 +623,21 @@ summary:hover {{
       reader.scrollLeft += delta;
     });
 
+    const topbar = document.querySelector(".topbar");
+    const mobileHeaderQuery = window.matchMedia("(max-width: 900px)");
+    const updateMobileHeaderOffset = () => {
+      if (!topbar) {
+        return;
+      }
+
+      const offset = mobileHeaderQuery.matches ? topbar.offsetHeight : 0;
+      document.documentElement.style.setProperty("--mobile-header-offset", `${offset}px`);
+    };
+
+    updateMobileHeaderOffset();
+    window.addEventListener("resize", updateMobileHeaderOffset);
+    mobileHeaderQuery.addEventListener("change", updateMobileHeaderOffset);
+
     const root = document.documentElement;
     const bindToggle = (id, className, onChange) => {
       const input = document.getElementById(id);
@@ -640,7 +657,7 @@ summary:hover {{
       return input;
     };
 
-    bindToggle("compactHeader", "compact-header");
+    bindToggle("compactHeader", "compact-header", updateMobileHeaderOffset);
     bindToggle("tightHeadings", "tight-headings");
     bindToggle("tightChapterBottom", "tight-chapter-bottom");
   }
