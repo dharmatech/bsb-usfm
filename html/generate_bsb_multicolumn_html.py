@@ -39,6 +39,8 @@ def render_multicolumn_html(books, output_path: Path, column_count: int) -> None
   --column-gap: 2.5rem;
   --reader-padding-x: 2.5rem;
   --column-width: calc((100vw - 12.5rem) / 4);
+  --section-spacing: 0.9rem;
+  --section-ref-gap: 0.75rem;
 }}
 
 * {{
@@ -121,6 +123,35 @@ body::before {{
   color: var(--muted);
 }}
 
+.topbar-control {{
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: rgba(12, 16, 24, 0.6);
+  color: var(--muted);
+}}
+
+.topbar-control label {{
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}}
+
+.topbar-control input[type="range"] {{
+  accent-color: var(--accent);
+  width: 140px;
+}}
+
+.topbar-control output {{
+  min-width: 4.5rem;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}}
+
 .topbar-chip {{
   border: 1px solid var(--rule);
   border-radius: 999px;
@@ -167,14 +198,14 @@ body::before {{
 
 .section-title {{
   display: block;
-  margin: 0.9rem 0 0.25rem;
+  margin: var(--section-spacing) 0 0.25rem;
   font-size: 1rem;
   color: #f8d477;
   break-after: avoid;
 }}
 
 .section-ref {{
-  margin: 0 0 0.75rem;
+  margin: 0 0 var(--section-ref-gap);
   font-size: 0.8rem;
   color: var(--muted);
   font-style: italic;
@@ -293,6 +324,15 @@ summary:hover {{
   .topbar-right {{
     flex-wrap: wrap;
   }}
+
+  .topbar-control {{
+    width: 100%;
+    justify-content: space-between;
+  }}
+
+  .topbar-control input[type="range"] {{
+    width: 160px;
+  }}
 }}
 </style>
 </head>
@@ -305,6 +345,11 @@ summary:hover {{
   <div class=\"topbar-right\">
     <div class=\"topbar-chip\">Columns: {column_count}</div>
     <div class=\"topbar-chip\">Flow left-to-right across columns</div>
+    <div class=\"topbar-control\">
+      <label for=\"sectionSpacing\">Section spacing</label>
+      <input id=\"sectionSpacing\" type=\"range\" min=\"0\" max=\"2\" step=\"0.05\" value=\"0.9\">
+      <output id=\"sectionSpacingValue\" for=\"sectionSpacing\">0.90rem</output>
+    </div>
   </div>
 </header>
 <main id=\"reader\" class=\"reader\">
@@ -501,6 +546,28 @@ summary:hover {{
       const delta = event.key === "PageDown" ? pageSize : -pageSize;
       reader.scrollLeft += delta;
     });
+
+    const spacingInput = document.getElementById("sectionSpacing");
+    const spacingValue = document.getElementById("sectionSpacingValue");
+    if (spacingInput && spacingValue) {
+      const applySpacing = (value) => {
+        const numeric = Number.parseFloat(value);
+        if (Number.isNaN(numeric)) {
+          return;
+        }
+
+        const clamped = Math.min(2, Math.max(0, numeric));
+        const refGap = Math.max(0.25, clamped * 0.8);
+        document.documentElement.style.setProperty("--section-spacing", `${clamped}rem`);
+        document.documentElement.style.setProperty("--section-ref-gap", `${refGap}rem`);
+        spacingValue.textContent = `${clamped.toFixed(2)}rem`;
+      };
+
+      applySpacing(spacingInput.value);
+      spacingInput.addEventListener("input", (event) => {
+        applySpacing(event.target.value);
+      });
+    }
   }
 </script>
 </body>
