@@ -369,6 +369,22 @@ summary:hover {{
 
     html_parts.append(
         """</main>
+<script>
+  document.querySelectorAll("details.book").forEach((book) => {
+    book.addEventListener("toggle", () => {
+      const chapters = book.querySelectorAll(":scope > details.chapter");
+      if (book.open) {
+        chapters.forEach((chapter) => {
+          chapter.open = true;
+        });
+      } else {
+        chapters.forEach((chapter) => {
+          chapter.open = false;
+        });
+      }
+    });
+  });
+</script>
 </body>
 </html>
 """
