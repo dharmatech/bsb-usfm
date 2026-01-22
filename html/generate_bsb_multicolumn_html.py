@@ -35,6 +35,8 @@ def render_multicolumn_html(books, output_path: Path, column_count: int) -> None
   --accent-soft: rgba(125, 211, 252, 0.15);
   --rule: rgba(255, 255, 255, 0.08);
   --header-height: 72px;
+  --topbar-padding-x: 2.5rem;
+  --topbar-padding-y: 0rem;
   --column-count: {column_count};
   --column-gap: 2.5rem;
   --reader-padding-x: 2.5rem;
@@ -42,6 +44,9 @@ def render_multicolumn_html(books, output_path: Path, column_count: int) -> None
   --section-spacing: 0rem;
   --section-ref-gap: 0.25rem;
   --chapter-spacing: 0rem;
+  --chapter-bottom-gap: 0.4rem;
+  --heading-line-height: 1.25;
+  --caret-gap: 0.6rem;
 }}
 
 * {{
@@ -89,7 +94,7 @@ body::before {{
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2.5rem;
+  padding: var(--topbar-padding-y) var(--topbar-padding-x);
   background: rgba(10, 12, 18, 0.88);
   border-bottom: 1px solid var(--rule);
   backdrop-filter: blur(8px);
@@ -153,6 +158,28 @@ body::before {{
   color: var(--text);
 }}
 
+.topbar-toggle {{
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: rgba(12, 16, 24, 0.6);
+  color: var(--muted);
+}}
+
+.topbar-toggle input[type="checkbox"] {{
+  accent-color: var(--accent);
+  margin: 0;
+}}
+
+.topbar-toggle label {{
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}}
+
 .topbar-chip {{
   border: 1px solid var(--rule);
   border-radius: 999px;
@@ -177,33 +204,36 @@ body::before {{
   break-inside: auto;
 }}
 
-.book-title {{
-  display: block;
-  margin: 1.4rem 0 0.5rem;
-  font-family: \"Fraunces\", \"Georgia\", serif;
-  font-size: 1.6rem;
-  letter-spacing: 0.03em;
-  color: var(--accent);
-  break-after: avoid;
-}}
+  .book-title {{
+    display: block;
+    margin: 1.4rem 0 0.5rem;
+    font-family: \"Fraunces\", \"Georgia\", serif;
+    font-size: 1.6rem;
+    letter-spacing: 0.03em;
+    color: var(--accent);
+    line-height: var(--heading-line-height);
+    break-after: avoid;
+  }}
 
-.chapter-title {{
-  display: block;
-  margin: var(--chapter-spacing) 0 0.4rem;
-  font-size: 0.95rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--muted);
-  break-after: avoid;
-}}
+  .chapter-title {{
+    display: block;
+    margin: var(--chapter-spacing) 0 var(--chapter-bottom-gap);
+    font-size: 0.95rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    line-height: var(--heading-line-height);
+    break-after: avoid;
+  }}
 
-.section-title {{
-  display: block;
-  margin: var(--section-spacing) 0 0.25rem;
-  font-size: 1rem;
-  color: #f8d477;
-  break-after: avoid;
-}}
+  .section-title {{
+    display: block;
+    margin: var(--section-spacing) 0 0.25rem;
+    font-size: 1rem;
+    color: #f8d477;
+    line-height: var(--heading-line-height);
+    break-after: avoid;
+  }}
 
 .section-ref {{
   margin: 0 0 var(--section-ref-gap);
@@ -230,14 +260,47 @@ p {{
   user-select: none;
 }}
 
-.instruction {{
-  font-style: italic;
-  color: var(--muted);
-}}
+  .instruction {{
+    font-style: italic;
+    color: var(--muted);
+  }}
 
-details {{
-  break-inside: auto;
-}}
+  :root.compact-header {{
+    --header-height: 56px;
+    --topbar-padding-x: 1.5rem;
+  }}
+
+  :root.compact-header .topbar-subtitle {{
+    display: none;
+  }}
+
+  :root.compact-header .topbar-title {{
+    font-size: 1.1rem;
+  }}
+
+  :root.tight-columns {{
+    --column-gap: 1.5rem;
+  }}
+
+  :root.tight-headings {{
+    --heading-line-height: 1.1;
+  }}
+
+  :root.tight-carets {{
+    --caret-gap: 0.3rem;
+  }}
+
+  :root.tight-chapter-bottom {{
+    --chapter-bottom-gap: 0rem;
+  }}
+
+  :root.zero-ref-gap {{
+    --section-ref-gap: 0rem;
+  }}
+
+  details {{
+    break-inside: auto;
+  }}
 
 summary {{
   list-style: none;
@@ -251,9 +314,9 @@ summary::-webkit-details-marker {{
 }}
 
 summary::before {{
-  content: \">\";
+  content: \">\"; 
   display: inline-block;
-  margin-right: 0.6rem;
+  margin-right: var(--caret-gap);
   color: var(--muted);
   transition: transform 0.2s ease, color 0.2s ease;
 }}
@@ -334,6 +397,11 @@ summary:hover {{
   .topbar-control input[type="range"] {{
     width: 160px;
   }}
+
+  .topbar-toggle {{
+    width: 100%;
+    justify-content: space-between;
+  }}
 }}
 </style>
 </head>
@@ -355,6 +423,30 @@ summary:hover {{
       <label for=\"chapterSpacing\">Chapter spacing</label>
       <input id=\"chapterSpacing\" type=\"range\" min=\"0\" max=\"2.5\" step=\"0.05\" value=\"0\">
       <output id=\"chapterSpacingValue\" for=\"chapterSpacing\">0.00rem</output>
+    </div>
+    <div class=\"topbar-toggle\">
+      <input id=\"compactHeader\" type=\"checkbox\" checked>
+      <label for=\"compactHeader\">Compact header</label>
+    </div>
+    <div class=\"topbar-toggle\">
+      <input id=\"tightColumns\" type=\"checkbox\">
+      <label for=\"tightColumns\">Tight columns</label>
+    </div>
+    <div class=\"topbar-toggle\">
+      <input id=\"tightHeadings\" type=\"checkbox\" checked>
+      <label for=\"tightHeadings\">Tight headings</label>
+    </div>
+    <div class=\"topbar-toggle\">
+      <input id=\"tightCarets\" type=\"checkbox\">
+      <label for=\"tightCarets\">Tight carets</label>
+    </div>
+    <div class=\"topbar-toggle\">
+      <input id=\"zeroRefGap\" type=\"checkbox\">
+      <label for=\"zeroRefGap\">No ref gap</label>
+    </div>
+    <div class=\"topbar-toggle\">
+      <input id=\"tightChapterBottom\" type=\"checkbox\" checked>
+      <label for=\"tightChapterBottom\">Tight chapter bottom</label>
     </div>
   </div>
 </header>
@@ -553,6 +645,33 @@ summary:hover {{
       reader.scrollLeft += delta;
     });
 
+    const root = document.documentElement;
+    const bindToggle = (id, className, onChange) => {
+      const input = document.getElementById(id);
+      if (!input) {
+        return null;
+      }
+
+      const apply = () => {
+        root.classList.toggle(className, input.checked);
+        if (onChange) {
+          onChange(input.checked);
+        }
+      };
+
+      input.addEventListener("change", apply);
+      apply();
+      return input;
+    };
+
+    bindToggle("compactHeader", "compact-header");
+    bindToggle("tightColumns", "tight-columns");
+    bindToggle("tightHeadings", "tight-headings");
+    bindToggle("tightCarets", "tight-carets");
+    bindToggle("tightChapterBottom", "tight-chapter-bottom");
+
+    const refGapToggle = document.getElementById("zeroRefGap");
+
     const spacingInput = document.getElementById("sectionSpacing");
     const spacingValue = document.getElementById("sectionSpacingValue");
     if (spacingInput && spacingValue) {
@@ -563,7 +682,8 @@ summary:hover {{
         }
 
         const clamped = Math.min(2, Math.max(0, numeric));
-        const refGap = Math.max(0.25, clamped * 0.8);
+        const refGap =
+          refGapToggle && refGapToggle.checked ? 0 : Math.max(0.25, clamped * 0.8);
         document.documentElement.style.setProperty("--section-spacing", `${clamped}rem`);
         document.documentElement.style.setProperty("--section-ref-gap", `${refGap}rem`);
         spacingValue.textContent = `${clamped.toFixed(2)}rem`;
@@ -573,6 +693,14 @@ summary:hover {{
       spacingInput.addEventListener("input", (event) => {
         applySpacing(event.target.value);
       });
+
+      if (refGapToggle) {
+        refGapToggle.addEventListener("change", () => {
+          applySpacing(spacingInput.value);
+        });
+      }
+
+      bindToggle("zeroRefGap", "zero-ref-gap");
     }
 
     const chapterSpacingInput = document.getElementById("chapterSpacing");
