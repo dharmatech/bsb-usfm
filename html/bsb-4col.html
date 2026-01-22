@@ -20,9 +20,9 @@
   --column-gap: 2.5rem;
   --reader-padding-x: 2.5rem;
   --column-width: calc((100vw - 12.5rem) / 4);
-  --section-spacing: 0.9rem;
-  --section-ref-gap: 0.75rem;
-  --chapter-spacing: 1.1rem;
+  --section-spacing: 0rem;
+  --section-ref-gap: 0.25rem;
+  --chapter-spacing: 0rem;
 }
 
 * {
@@ -329,13 +329,13 @@ summary:hover {
     <div class="topbar-chip">Flow left-to-right across columns</div>
     <div class="topbar-control">
       <label for="sectionSpacing">Section spacing</label>
-      <input id="sectionSpacing" type="range" min="0" max="2" step="0.05" value="0.9">
-      <output id="sectionSpacingValue" for="sectionSpacing">0.90rem</output>
+      <input id="sectionSpacing" type="range" min="0" max="2" step="0.05" value="0">
+      <output id="sectionSpacingValue" for="sectionSpacing">0.00rem</output>
     </div>
     <div class="topbar-control">
       <label for="chapterSpacing">Chapter spacing</label>
-      <input id="chapterSpacing" type="range" min="0" max="2.5" step="0.05" value="1.1">
-      <output id="chapterSpacingValue" for="chapterSpacing">1.10rem</output>
+      <input id="chapterSpacing" type="range" min="0" max="2.5" step="0.05" value="0">
+      <output id="chapterSpacingValue" for="chapterSpacing">0.00rem</output>
     </div>
   </div>
 </header>
