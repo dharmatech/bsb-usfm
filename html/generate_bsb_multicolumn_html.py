@@ -412,37 +412,13 @@ summary:hover {{
     <div class=\"topbar-subtitle\">Multi-column reading view</div>
   </div>
   <div class=\"topbar-right\">
-    <div class=\"topbar-chip\">Columns: {column_count}</div>
-    <div class=\"topbar-chip\">Flow left-to-right across columns</div>
-    <div class=\"topbar-control\">
-      <label for=\"sectionSpacing\">Section spacing</label>
-      <input id=\"sectionSpacing\" type=\"range\" min=\"0\" max=\"2\" step=\"0.05\" value=\"0\">
-      <output id=\"sectionSpacingValue\" for=\"sectionSpacing\">0.00rem</output>
-    </div>
-    <div class=\"topbar-control\">
-      <label for=\"chapterSpacing\">Chapter spacing</label>
-      <input id=\"chapterSpacing\" type=\"range\" min=\"0\" max=\"2.5\" step=\"0.05\" value=\"0\">
-      <output id=\"chapterSpacingValue\" for=\"chapterSpacing\">0.00rem</output>
-    </div>
     <div class=\"topbar-toggle\">
       <input id=\"compactHeader\" type=\"checkbox\" checked>
       <label for=\"compactHeader\">Compact header</label>
     </div>
     <div class=\"topbar-toggle\">
-      <input id=\"tightColumns\" type=\"checkbox\">
-      <label for=\"tightColumns\">Tight columns</label>
-    </div>
-    <div class=\"topbar-toggle\">
       <input id=\"tightHeadings\" type=\"checkbox\" checked>
       <label for=\"tightHeadings\">Tight headings</label>
-    </div>
-    <div class=\"topbar-toggle\">
-      <input id=\"tightCarets\" type=\"checkbox\">
-      <label for=\"tightCarets\">Tight carets</label>
-    </div>
-    <div class=\"topbar-toggle\">
-      <input id=\"zeroRefGap\" type=\"checkbox\">
-      <label for=\"zeroRefGap\">No ref gap</label>
     </div>
     <div class=\"topbar-toggle\">
       <input id=\"tightChapterBottom\" type=\"checkbox\" checked>
@@ -665,63 +641,8 @@ summary:hover {{
     };
 
     bindToggle("compactHeader", "compact-header");
-    bindToggle("tightColumns", "tight-columns");
     bindToggle("tightHeadings", "tight-headings");
-    bindToggle("tightCarets", "tight-carets");
     bindToggle("tightChapterBottom", "tight-chapter-bottom");
-
-    const refGapToggle = document.getElementById("zeroRefGap");
-
-    const spacingInput = document.getElementById("sectionSpacing");
-    const spacingValue = document.getElementById("sectionSpacingValue");
-    if (spacingInput && spacingValue) {
-      const applySpacing = (value) => {
-        const numeric = Number.parseFloat(value);
-        if (Number.isNaN(numeric)) {
-          return;
-        }
-
-        const clamped = Math.min(2, Math.max(0, numeric));
-        const refGap =
-          refGapToggle && refGapToggle.checked ? 0 : Math.max(0.25, clamped * 0.8);
-        document.documentElement.style.setProperty("--section-spacing", `${clamped}rem`);
-        document.documentElement.style.setProperty("--section-ref-gap", `${refGap}rem`);
-        spacingValue.textContent = `${clamped.toFixed(2)}rem`;
-      };
-
-      applySpacing(spacingInput.value);
-      spacingInput.addEventListener("input", (event) => {
-        applySpacing(event.target.value);
-      });
-
-      if (refGapToggle) {
-        refGapToggle.addEventListener("change", () => {
-          applySpacing(spacingInput.value);
-        });
-      }
-
-      bindToggle("zeroRefGap", "zero-ref-gap");
-    }
-
-    const chapterSpacingInput = document.getElementById("chapterSpacing");
-    const chapterSpacingValue = document.getElementById("chapterSpacingValue");
-    if (chapterSpacingInput && chapterSpacingValue) {
-      const applyChapterSpacing = (value) => {
-        const numeric = Number.parseFloat(value);
-        if (Number.isNaN(numeric)) {
-          return;
-        }
-
-        const clamped = Math.min(2.5, Math.max(0, numeric));
-        document.documentElement.style.setProperty("--chapter-spacing", `${clamped}rem`);
-        chapterSpacingValue.textContent = `${clamped.toFixed(2)}rem`;
-      };
-
-      applyChapterSpacing(chapterSpacingInput.value);
-      chapterSpacingInput.addEventListener("input", (event) => {
-        applyChapterSpacing(event.target.value);
-      });
-    }
   }
 </script>
 </body>
