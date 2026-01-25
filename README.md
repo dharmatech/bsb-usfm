@@ -24,3 +24,9 @@ See [html](html) directory.
 # Screenshot
 
 <img width="3840" height="2160" alt="image" src="https://github.com/user-attachments/assets/9a094c92-ca71-4b4e-9f0e-7044cd9c7cbe" />
+
+# Video
+
+Video demo HTML version here:
+
+https://youtu.be/oJMYcoaWjxk?si=WT3HbaHvTwHIDv5G
